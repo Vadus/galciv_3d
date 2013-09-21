@@ -110,11 +110,11 @@ THREE.OBJLoader.prototype = {
 
 		// vt float float
 
-		var uv_pattern = /vt( +[\d|\.|\+|\-|e]+)( +[\d|\.|\+|\-|e]+)/
+		var uv_pattern = /vt( +[\d|\.|\+|\-|e]+)( +[\d|\.|\+|\-|e]+)/;
 
 		// f vertex vertex vertex ...
 
-		var face_pattern1 = /f( +\d+)( +\d+)( +\d+)( +\d+)?/
+		var face_pattern1 = /f( +\d+)( +\d+)( +\d+)( +\d+)?/;
 
 		// f vertex/uv vertex/uv vertex/uv ...
 

@@ -9,7 +9,7 @@
 		
 		this.galaxy = galaxy;
 		var origin = this.galaxy.camera.position;
-		var direction = vector.sub( this.galaxy.camera.position ).normalize()
+		var direction = vector.sub( this.galaxy.camera.position ).normalize();
 
 		this.ray = new THREE.Ray( origin, direction );
 

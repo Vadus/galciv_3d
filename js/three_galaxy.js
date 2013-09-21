@@ -1,7 +1,7 @@
 var OBJECT_TYPE = {
 	STAR : 0,
 	PLANET : 1
-}
+};
 
 function Star() {
 	this.x = 0;
@@ -17,11 +17,11 @@ function Star() {
 
 Star.prototype.getObjectType = function(){
 	return OBJECT_TYPE.STAR;
-}
+};
 
 Star.prototype.getStar = function(){
 	return this;
-}
+};
 
 Star.prototype.getDistanceTo = function(position) {
 
@@ -35,39 +35,39 @@ Star.prototype.getDistanceTo = function(position) {
 
 	//sqrt((x1-x2)² + (y1-y2)² + (z1-z2)²)
 	return dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2) + Math.pow((z1 - z2), 2));
-}
+};
 
 Star.prototype.getMesh = function() {
 
 	return this.starSphere;
-}
+};
 
 Star.prototype.getSize = function() {
 
 	return this.size;
-}
+};
 
 Star.prototype.getAttractionDistance = function() {
 
 	return this.planets.length * 150;
-}
+};
 
 Star.prototype.onClick = function() {
 
 	console.log("clicked at star");
-}
+};
 
 Star.prototype.isActive = function() {
-}
+};
 
 Star.prototype.activate = function() {
-}
+};
 
 Star.prototype.deactivate = function() {
-}
+};
 
 Star.prototype.setVisible = function(visible) {
-}
+};
 
 var PLANET_TYPE = {
 	J : 5, //Mercury
@@ -77,7 +77,7 @@ var PLANET_TYPE = {
 	A : 2, //Jupter
 	B : 3, //Saturn
 	W : 7 // Water World
-}
+};
 
 function Planet(star, type, size, radius) {
 	this.star = star;
@@ -99,53 +99,53 @@ function Planet(star, type, size, radius) {
 Planet.prototype.getStar = function() {
 
 	return this.star;
-}
+};
 
 Planet.prototype.getObjectType = function(){
 	return OBJECT_TYPE.PLANET;
-}
+};
 
 Planet.prototype.updatePos = function(angle) {
 	this.angle = angle;
 	this.x = parseInt(this.star.x) + this.radius * Math.cos(this.angle);
 	this.y = parseInt(this.star.y) + (this.radius - (this.radius * 0.2)) * Math.sin(this.angle);
-}
+};
 
 Planet.prototype.isVisible = function() {
 	return true;
-}
+};
 
 Planet.prototype.getMesh = function() {
 
 	return this.planetSphere;
-}
+};
 
 Planet.prototype.getSize = function() {
 
 	return this.size;
-}
+};
 
 Planet.prototype.getAttractionDistance = function() {
 
 	return this.size * 100 / 3;
-}
+};
 
 Planet.prototype.onClick = function() {
 
 	console.log("clicked at planet");
-}
+};
 
 Planet.prototype.isActive = function() {
 	return this.planetGlow.visible == true;
-}
+};
 
 Planet.prototype.activate = function() {
 	this.planetGlow.visible = true;
-}
+};
 
 Planet.prototype.deactivate = function() {
 	this.planetGlow.visible = false;
-}
+};
 
 Planet.prototype.setVisible = function(visible) {
 
@@ -158,11 +158,11 @@ Planet.prototype.setVisible = function(visible) {
 
 	//restore visibility of planetGlow
 	this.planetGlow.visible = glowVisible;
-}
+};
 
 Planet.prototype.isVisible = function() {
 	return this.planetSphere.visible == true;
-}
+};
 function Three_Galaxy(container) {
 
 	this.container = container;
@@ -276,7 +276,7 @@ Three_Galaxy.prototype.setupStars = function() {
 	}
 	
 	//this.setupShip(star_1.x, star_1.y, star_1.z + 200);
-}
+};
 
 Three_Galaxy.prototype.setupStar = function(star) {
 
@@ -318,7 +318,7 @@ Three_Galaxy.prototype.setupStar = function(star) {
 	star.starLight = starLight;
 
 	this.clickable.push(star);
-}
+};
 
 Three_Galaxy.prototype.setupPlanet = function(planet) {
 
@@ -467,7 +467,7 @@ Three_Galaxy.prototype.setupPlanet = function(planet) {
 
 	this.clickable.push(planet);
 
-}
+};
 
 Three_Galaxy.prototype.setupShip = function(x, y, z){
 	
@@ -507,7 +507,7 @@ Three_Galaxy.prototype.setupShip = function(x, y, z){
 		theScene.add(spaceShip);
 
 	});
-}
+};
 
 Three_Galaxy.prototype.onClick = function(event) {
 
@@ -536,23 +536,23 @@ Three_Galaxy.prototype.onClick = function(event) {
 		//is this a new active Item?
 		if (this.activeItem == undefined || this.activeItem.getMesh().id != galaxyItem.getMesh().id) {
 			for (var i = 0; i < this.clickable.length; i++) {
-				var item = this.clickable[i]
+				var item = this.clickable[i];
 				item.deactivate();
 			}
 		}
 		this.activeItem = galaxyItem;
 		this.activeItem.activate();
 
-		galaxyItem.onClick()
+		galaxyItem.onClick();
 	} else {
 		//deactive all clickable items
 		for (var i = 0; i < this.clickable.length; i++) {
-			var item = this.clickable[i]
+			var item = this.clickable[i];
 			item.deactivate();
 		}
 		this.activeItem = undefined;
 	}
-}
+};
 
 Three_Galaxy.prototype.onDoubleClick = function(event) {
 
@@ -583,7 +583,7 @@ Three_Galaxy.prototype.onDoubleClick = function(event) {
 	} else {
 		this.updateCameraAttentionOn(this.activeItem, true);
 	}
-}
+};
 
 Three_Galaxy.prototype.updateCameraAttentionOn = function(galacticItem, itemClicked) {
 
@@ -599,16 +599,16 @@ Three_Galaxy.prototype.updateCameraAttentionOn = function(galacticItem, itemClic
 	}
 
 	this.cameraAttentionPosition = this.camera.position;
-	this.cameraAttentionPosition.set(this.cameraAttention.x, this.cameraAttention.y - this.cameraDistance, this.cameraAttention.z + this.cameraDistance)
+	this.cameraAttentionPosition.set(this.cameraAttention.x, this.cameraAttention.y - this.cameraDistance, this.cameraAttention.z + this.cameraDistance);
 
 	this.camera.position = this.cameraAttentionPosition;
-}
+};
 
 Three_Galaxy.prototype.render = function() {
 
 	this.renderer.render(this.scene, this.camera);
 
-}
+};
 
 Three_Galaxy.prototype.update = function() {
 
@@ -671,21 +671,21 @@ Three_Galaxy.prototype.update = function() {
 	}
 
 	this.controls.update(this.cameraAttention);
-}
+};
 
 Three_Galaxy.prototype.getContainer = function() {
 	return this.container;
-}
+};
 
 Three_Galaxy.prototype.getScene = function() {
 	return this.scene;
-}
+};
 
 Three_Galaxy.prototype.getRenderer = function() {
-	return this.renderer
-}
+	return this.renderer;
+};
 
 Three_Galaxy.prototype.getControls = function() {
-	return this.controls
-}
+	return this.controls;
+};
 
