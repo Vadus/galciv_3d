@@ -141,6 +141,11 @@ THREE.OrbitControls = function(galaxy) {
 		}
 
 		scale /= zoomScale;
+		
+		//camera having attention
+		if(this.galaxy.cameraAttention != undefined){
+			this.galaxy.cameraDistance *= scale;
+		}
 
 	};
 
@@ -153,7 +158,11 @@ THREE.OrbitControls = function(galaxy) {
 		}
 
 		scale *= zoomScale;
-
+		
+		//camera having attention
+		if(this.galaxy.cameraAttention != undefined){
+			this.galaxy.cameraDistance *= scale;
+		}
 	};
 
 	this.pan = function(distance) {
@@ -218,8 +227,9 @@ THREE.OrbitControls = function(galaxy) {
 		position.y = position.y + offset.y;
 		position.z = position.z + offset.z;
 		*/
-
+		
 		this.object.lookAt(this.center);
+		
 		/*
 		if(state != STATE.ZOOM && state != STATE.NONE){
 			if (this.galaxy.cameraAttention === undefined){
@@ -393,7 +403,7 @@ THREE.OrbitControls = function(galaxy) {
 			return;
 		
 		//reset camera position	
-		scope.galaxy.cameraAttentionPosition = undefined;
+		//scope.galaxy.cameraAttentionPosition = undefined;
 
 		var delta = 0;
 
@@ -417,26 +427,30 @@ THREE.OrbitControls = function(galaxy) {
 
 		}
 
-		//location of a star
-		var x1 = 0;
-		var y1 = 0;
-		var z1 = 0;
+		//logging
+		if(scope.galaxy.cameraAttention == undefined){
 
-		var x2 = scope.object.position.x;
-		var y2 = scope.object.position.y;
-		var z2 = scope.object.position.z;
+			//location of a star
+			var x1 = 0;
+			var y1 = 0;
+			var z1 = 0;
+	
+			var x2 = scope.object.position.x;
+			var y2 = scope.object.position.y;
+			var z2 = scope.object.position.z;
+			
+			if (window.console && console.log) {
+				console.log("zooming, camera position: " + x2 + "," + y2 + "," + z2);
+				//for firebug
+			}
+	
+			//sqrt((x1-x2)² + (y1-y2)² + (z1-z2)²)
+	
+			var dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2) + Math.pow((z1 - z2), 2));
+	
 		
-		if (window.console && console.log) {
-			console.log("zooming, camera position: " + x2 + "," + y2 + "," + z2);
-			//for firebug
-		}
-
-		//sqrt((x1-x2)² + (y1-y2)² + (z1-z2)²)
-
-		var dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2) + Math.pow((z1 - z2), 2));
-
-		if (window.console && console.log) {
 			console.log("camera distance to center: " + dist);
+		
 		}
 	}
 

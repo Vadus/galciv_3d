@@ -2,7 +2,8 @@ function Star() {
 	this.x = 0;
 	this.y = 0;
 	this.z = 0;
-	this.size = 5; //default
+	this.size = 5;
+	//default
 	this.planets = new Array();
 	this.group = undefined;
 	this.starSphere = undefined;
@@ -33,6 +34,10 @@ Star.prototype.getSize = function() {
 	return this.size;
 };
 
+Star.prototype.getAttractionDistance = function() {
+
+	return this.planets.length * 150;
+};
 
 Star.prototype.onClick = function() {
 
@@ -50,15 +55,25 @@ Star.prototype.deactivate = function() {
 
 Star.prototype.setVisible = function(visible) {
 }
+var PLANET_TYPE = {
+	J : 5, //Mercury
+	C : 4, //Venus
+	M : 8, //Earth
+	K : 6, //Mars
+	A : 2, //Jupter
+	B : 3, //Saturn
+	W : 7 // Water World
+};
 
 Planet.prototype.isVisible = function() {
 	return true;
 }
-
-function Planet(star, size, radius) {
+function Planet(star, type, size, radius) {
 	this.star = star;
-	this.size = size; // 1 - 5
+	this.size = size;
+	// 1 - 5
 	this.radius = radius;
+	this.type = type;
 	this.x = 0;
 	this.y = 0;
 	this.z = 0;
@@ -68,7 +83,6 @@ function Planet(star, size, radius) {
 	this.cloudSphere = undefined;
 	this.planetGlow = undefined;
 	this.ellipse = undefined;
-
 }
 
 Planet.prototype.updatePos = function(angle) {
@@ -85,6 +99,11 @@ Planet.prototype.getMesh = function() {
 Planet.prototype.getSize = function() {
 
 	return this.size;
+};
+
+Planet.prototype.getAttractionDistance = function() {
+
+	return this.size * 100 / 3;
 };
 
 Planet.prototype.onClick = function() {
@@ -107,7 +126,7 @@ Planet.prototype.deactivate = function() {
 Planet.prototype.setVisible = function(visible) {
 
 	//save visibility of planetGlow
-	var glowVisible = visible == true? this.planetGlow.visible: false;
+	var glowVisible = visible == true ? this.planetGlow.visible : false;
 
 	this.group.traverse(function(child) {
 		child.visible = visible;
@@ -149,7 +168,10 @@ function Three_Galaxy(container) {
 	this.scene.add(this.camera);
 	// the camera defaults to position (0,0,0)
 	// 	so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
-	this.camera.position.set(0, -150, 400);
+	
+	this.cameraDistance = 600;
+	
+	this.camera.position.set(0, 0 - this.cameraDistance, 0 + this.cameraDistance);
 	this.camera.lookAt(this.scene.position);
 	//save initial camera location
 	this.cameraOrigin = this.camera.position.clone();
@@ -210,8 +232,10 @@ function Three_Galaxy(container) {
 Three_Galaxy.prototype.setupStars = function() {
 
 	var star_1 = new Star();
-	star_1.planets[0] = new Planet(star_1, 1, 100);
-	star_1.planets[1] = new Planet(star_1, 1, 200);
+	star_1.planets[0] = new Planet(star_1, PLANET_TYPE.J, 1, 100);
+	star_1.planets[1] = new Planet(star_1, PLANET_TYPE.C, 1, 200);
+	star_1.planets[2] = new Planet(star_1, PLANET_TYPE.M, 1, 300);
+	star_1.planets[3] = new Planet(star_1, PLANET_TYPE.K, 1, 400);
 
 	this.stars[0] = star_1;
 
@@ -225,8 +249,9 @@ Three_Galaxy.prototype.setupStars = function() {
 
 			this.setupPlanet(planet);
 		}
-
 	}
+	
+	//this.setupShip(star_1.x, star_1.y, star_1.z + 200);
 };
 
 Three_Galaxy.prototype.setupStar = function(star) {
@@ -280,9 +305,32 @@ Three_Galaxy.prototype.setupPlanet = function(planet) {
 
 	var sphereGeo = new THREE.SphereGeometry(planet.size * 10, 64, 32);
 
-	var colors = THREE.ImageUtils.loadTexture("img/earth-day.jpg");
-	var bumpy = THREE.ImageUtils.loadTexture("img/earth-topo.jpg");
-	var shiny = THREE.ImageUtils.loadTexture("img/earth-specular.jpg");
+	var surface = undefined;
+	var topografics = undefined;
+	var specularics = undefined;
+
+	if (planet.type == PLANET_TYPE.M) {
+		surface = "img/earth-day.jpg";
+		topografics = "img/earth-topo.jpg";
+		specularics = "img/earth-specular.jpg";
+	} else if (planet.type == PLANET_TYPE.J) {
+		surface = "img/planet_j_surface.jpg";
+		topografics = "img/planet_j_bump.jpg";
+	} else if (planet.type == PLANET_TYPE.C) {
+		surface = "img/planet_c_surface.jpg";
+		topografics = "img/planet_c_bump.jpg";
+	} else if (planet.type == PLANET_TYPE.K) {
+		surface = "img/planet_k_surface.jpg";
+		topografics = "img/planet_k_bump.jpg";
+	}
+
+	var colors = THREE.ImageUtils.loadTexture(surface);
+	var bumpy = THREE.ImageUtils.loadTexture(topografics);
+	var shiny = null;
+	if (specularics != undefined) {
+		shiny = THREE.ImageUtils.loadTexture(specularics);
+	}
+	//var shiny = THREE.ImageUtils.loadTexture("img/earth-specular.jpg");
 
 	var planetMaterial = new THREE.MeshPhongMaterial({
 		color : 0xffffff,
@@ -304,9 +352,21 @@ Three_Galaxy.prototype.setupPlanet = function(planet) {
 		transparent : true
 	});
 
-	var cloudSphere = new THREE.Mesh(sphereGeo.clone(), cloudMaterial);
-	cloudSphere.scale.x = cloudSphere.scale.y = cloudSphere.scale.z = 1.005;
-	cloudSphere.position.set(planet.x, planet.y, planet.z);
+	var cloudSphere = undefined;
+	if (planet.type == PLANET_TYPE.M) {
+		cloudSphere = new THREE.Mesh(sphereGeo.clone(), cloudMaterial);
+		cloudSphere.scale.x = cloudSphere.scale.y = cloudSphere.scale.z = 1.005;
+		cloudSphere.position.set(planet.x, planet.y, planet.z);
+	}
+
+
+	var planetGlowMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.BackSide } );
+	var planetGlow = new THREE.Mesh( sphereGeo, planetGlowMaterial );
+	planetGlow.position = planetSphere.position;
+	planetGlow.scale.multiplyScalar(1.05);
+	planetGlow.visible = false;
+
+	/*
 
 	// create glow/active sphere around planet
 	//   that is within specially labeled script tags
@@ -336,10 +396,14 @@ Three_Galaxy.prototype.setupPlanet = function(planet) {
 		transparent : true
 	});
 
+	
+
 	var planetGlow = new THREE.Mesh(sphereGeo.clone(), customMaterial.clone());
 	planetGlow.position = planetSphere.position;
 	planetGlow.scale.multiplyScalar(1.2);
 	planetGlow.visible = false;
+	
+	*/
 
 	// add planets ellipse around star
 	// use LineBasicMaterial if no dashes are desired
@@ -357,7 +421,9 @@ Three_Galaxy.prototype.setupPlanet = function(planet) {
 
 	var group = new THREE.Object3D();
 	group.add(planetSphere);
-	group.add(cloudSphere);
+	if (cloudSphere != undefined) {
+		group.add(cloudSphere);
+	}
 	group.add(planetGlow);
 	group.add(ellipse);
 
@@ -370,12 +436,54 @@ Three_Galaxy.prototype.setupPlanet = function(planet) {
 	planet.ellipse = ellipse;
 
 	planet.planetSphere.rotation.x += 1;
-	planet.cloudSphere.rotation.x += 1;
+	if (planet.cloudSphere != undefined) {
+		planet.cloudSphere.rotation.x += 1;
+	}
 	planet.planetGlow.rotation.x += 1;
 
 	this.clickable.push(planet);
 
 };
+
+Three_Galaxy.prototype.setupShip = function(x, y, z){
+	
+	var spaceShipMesh = "obj/spaceship/spacefighter_e.obj";
+	var spaceShipSurface = "obj/spaceship/metal.jpg";
+
+	var spaceShipTexture = new THREE.Texture();
+
+	var loader = new THREE.ImageLoader(new THREE.LoadingManager());
+	loader.load(spaceShipSurface, function(image) {
+
+		spaceShipTexture.image = image;
+		spaceShipTexture.needsUpdate = true;
+
+	});
+
+	// model
+	var theScene = this.scene;
+
+	var manager = new THREE.LoadingManager();
+	var loader = new THREE.OBJLoader(manager);
+	loader.load(spaceShipMesh, function(spaceShip) {
+
+		spaceShip.traverse(function(child) {
+
+			if ( child instanceof THREE.Mesh) {
+
+				child.material.map = spaceShipTexture;
+
+			}
+
+		});
+
+		spaceShip.position.x = x;
+		spaceShip.position.y = y;
+		spaceShip.position.z = z;
+		theScene.add(spaceShip);
+
+	});
+}
 
 Three_Galaxy.prototype.onClick = function(event) {
 
@@ -400,22 +508,21 @@ Three_Galaxy.prototype.onClick = function(event) {
 	// if there is one (or more) intersections
 	if (intersects.length > 0) {
 		var galaxyItem = intersects[0].galaxyItem;
-		
+
 		//is this a new active Item?
-		if(this.activeItem == undefined || this.activeItem.getMesh().id != galaxyItem.getMesh().id){
-			for(var i = 0; i < this.clickable.length; i++){
+		if (this.activeItem == undefined || this.activeItem.getMesh().id != galaxyItem.getMesh().id) {
+			for (var i = 0; i < this.clickable.length; i++) {
 				var item = this.clickable[i]
 				item.deactivate();
 			}
 		}
 		this.activeItem = galaxyItem;
 		this.activeItem.activate();
-		
+
 		galaxyItem.onClick()
-	}
-	else{
+	} else {
 		//deactive all clickable items
-		for(var i = 0; i < this.clickable.length; i++){
+		for (var i = 0; i < this.clickable.length; i++) {
 			var item = this.clickable[i]
 			item.deactivate();
 		}
@@ -424,28 +531,41 @@ Three_Galaxy.prototype.onClick = function(event) {
 };
 
 Three_Galaxy.prototype.onDoubleClick = function(event) {
-	
-	console.log("doubleClick");
-	
-	this.updateCameraAttention();
-}
 
-Three_Galaxy.prototype.updateCameraAttention = function(){
-	
-	if(this.activeItem === undefined){
+	console.log("doubleClick");
+
+	//TODO: sepearate doubleClick from click.
+	//Check what is currently active
+	//if it is a planet, and clicked at nothing, then switch to system view
+	//if is is a star, and clicked at nothing, then switch to galactic view
+
+	if (this.activeItem === undefined) {
+
 		this.camera.position = this.cameraOrigin.clone();
 		this.cameraAttention = this.scene.position;
 		this.cameraAttentionPosition = undefined;
 		return;
+	} else {
+		this.updateCameraAttentionOn(this.activeItem, true);
 	}
-	
-	this.cameraAttention = this.activeItem.getMesh().position;
-	
-	var cameraDistance = this.activeItem.getSize() * 100 / 2;
-	
+}
+
+Three_Galaxy.prototype.updateCameraAttentionOn = function(galacticItem, itemClicked) {
+
+	if (galacticItem === undefined) {
+		return;
+	}
+
+	this.cameraAttention = galacticItem.getMesh().position;
+
+	//var cameraDistance = this.activeItem.getSize() * 100 / 2;
+	if(itemClicked){
+		this.cameraDistance = galacticItem.getAttractionDistance();
+	}
+
 	this.cameraAttentionPosition = this.camera.position;
-	this.cameraAttentionPosition.set(this.cameraAttention.x, this.cameraAttention.y - cameraDistance, this.cameraAttention.z + cameraDistance)
-	
+	this.cameraAttentionPosition.set(this.cameraAttention.x, this.cameraAttention.y - this.cameraDistance, this.cameraAttention.z + this.cameraDistance)
+
 	this.camera.position = this.cameraAttentionPosition;
 }
 
@@ -474,11 +594,10 @@ Three_Galaxy.prototype.update = function() {
 		//var dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2) + Math.pow((z1 - z2), 2));
 		var dist = star.getDistanceTo(this.camera.position);
 
+		//TODO: Better: star.position.distanceTo(otherVector3D like this.camera.position)
+
 		for (var i in star.planets) {
 			var planet = star.planets[i];
-
-			planet.planetSphere.rotation.y += 0.0050;
-			planet.cloudSphere.rotation.y += 0.0040;
 
 			//position at ellipse
 			planet.updatePos(planet.angle + 0.001);
@@ -486,8 +605,12 @@ Three_Galaxy.prototype.update = function() {
 			planet.planetSphere.position.x = planet.x;
 			planet.planetSphere.position.y = planet.y;
 
-			planet.cloudSphere.position.x = planet.x;
-			planet.cloudSphere.position.y = planet.y;
+			planet.planetSphere.rotation.y += 0.0050;
+			if (planet.cloudSphere != undefined) {
+				planet.cloudSphere.rotation.y += 0.0040;
+				planet.cloudSphere.position.x = planet.x;
+				planet.cloudSphere.position.y = planet.y;
+			}
 
 			if (dist > 2000) {
 				planet.setVisible(false);
@@ -497,23 +620,21 @@ Three_Galaxy.prototype.update = function() {
 
 		}
 	}
-	
-	if(this.cameraAttentionPosition != undefined && this.controls.getState() == -1){
-		
-		this.updateCameraAttention();
-		
-		
-		
+
+	if (this.cameraAttentionPosition != undefined && this.controls.getState() == -1) {
+
+		this.updateCameraAttentionOn(this.activeItem, false);
+
 		/*
-		var cameraDistance = 100; // default
-		if(this.activeItem != undefined){
-			cameraDistance = this.activeItem.getSize() * 100 / 2;
-		}
-		
-		this.camera.position.set(this.cameraAttention.x, this.cameraAttention.y - cameraDistance, this.cameraAttention.z + cameraDistance);
-		*/
+		 var cameraDistance = 100; // default
+		 if(this.activeItem != undefined){
+		 cameraDistance = this.activeItem.getSize() * 100 / 2;
+		 }
+
+		 this.camera.position.set(this.cameraAttention.x, this.cameraAttention.y - cameraDistance, this.cameraAttention.z + cameraDistance);
+		 */
 	}
-	
+
 	this.controls.update(this.cameraAttention);
 }
 
@@ -532,3 +653,4 @@ Three_Galaxy.prototype.getRenderer = function() {
 Three_Galaxy.prototype.getControls = function() {
 	return this.controls
 }
+
