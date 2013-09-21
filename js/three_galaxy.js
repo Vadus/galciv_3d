@@ -1,3 +1,8 @@
+var OBJECT_TYPE = {
+	STAR : 0,
+	PLANET : 1
+}
+
 function Star() {
 	this.x = 0;
 	this.y = 0;
@@ -8,6 +13,14 @@ function Star() {
 	this.group = undefined;
 	this.starSphere = undefined;
 	this.starLight = undefined;
+}
+
+Star.prototype.getObjectType = function(){
+	return OBJECT_TYPE.STAR;
+}
+
+Star.prototype.getStar = function(){
+	return this;
 }
 
 Star.prototype.getDistanceTo = function(position) {
@@ -22,27 +35,27 @@ Star.prototype.getDistanceTo = function(position) {
 
 	//sqrt((x1-x2)² + (y1-y2)² + (z1-z2)²)
 	return dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2) + Math.pow((z1 - z2), 2));
-};
+}
 
 Star.prototype.getMesh = function() {
 
 	return this.starSphere;
-};
+}
 
 Star.prototype.getSize = function() {
 
 	return this.size;
-};
+}
 
 Star.prototype.getAttractionDistance = function() {
 
 	return this.planets.length * 150;
-};
+}
 
 Star.prototype.onClick = function() {
 
 	console.log("clicked at star");
-};
+}
 
 Star.prototype.isActive = function() {
 }
@@ -55,6 +68,7 @@ Star.prototype.deactivate = function() {
 
 Star.prototype.setVisible = function(visible) {
 }
+
 var PLANET_TYPE = {
 	J : 5, //Mercury
 	C : 4, //Venus
@@ -63,11 +77,8 @@ var PLANET_TYPE = {
 	A : 2, //Jupter
 	B : 3, //Saturn
 	W : 7 // Water World
-};
-
-Planet.prototype.isVisible = function() {
-	return true;
 }
+
 function Planet(star, type, size, radius) {
 	this.star = star;
 	this.size = size;
@@ -85,31 +96,44 @@ function Planet(star, type, size, radius) {
 	this.ellipse = undefined;
 }
 
+Planet.prototype.getStar = function() {
+
+	return this.star;
+}
+
+Planet.prototype.getObjectType = function(){
+	return OBJECT_TYPE.PLANET;
+}
+
 Planet.prototype.updatePos = function(angle) {
 	this.angle = angle;
 	this.x = parseInt(this.star.x) + this.radius * Math.cos(this.angle);
 	this.y = parseInt(this.star.y) + (this.radius - (this.radius * 0.2)) * Math.sin(this.angle);
-};
+}
+
+Planet.prototype.isVisible = function() {
+	return true;
+}
 
 Planet.prototype.getMesh = function() {
 
 	return this.planetSphere;
-};
+}
 
 Planet.prototype.getSize = function() {
 
 	return this.size;
-};
+}
 
 Planet.prototype.getAttractionDistance = function() {
 
 	return this.size * 100 / 3;
-};
+}
 
 Planet.prototype.onClick = function() {
 
 	console.log("clicked at planet");
-};
+}
 
 Planet.prototype.isActive = function() {
 	return this.planetGlow.visible == true;
@@ -169,7 +193,7 @@ function Three_Galaxy(container) {
 	// the camera defaults to position (0,0,0)
 	// 	so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
 	
-	this.cameraDistance = 600;
+	this.cameraDistance = 3000;
 	
 	this.camera.position.set(0, 0 - this.cameraDistance, 0 + this.cameraDistance);
 	this.camera.lookAt(this.scene.position);
@@ -227,7 +251,7 @@ function Three_Galaxy(container) {
 	//                 right  click to pan
 	this.controls = new THREE.OrbitControls(this);
 
-};
+}
 
 Three_Galaxy.prototype.setupStars = function() {
 
@@ -252,7 +276,7 @@ Three_Galaxy.prototype.setupStars = function() {
 	}
 	
 	//this.setupShip(star_1.x, star_1.y, star_1.z + 200);
-};
+}
 
 Three_Galaxy.prototype.setupStar = function(star) {
 
@@ -443,7 +467,7 @@ Three_Galaxy.prototype.setupPlanet = function(planet) {
 
 	this.clickable.push(planet);
 
-};
+}
 
 Three_Galaxy.prototype.setupShip = function(x, y, z){
 	
@@ -528,23 +552,34 @@ Three_Galaxy.prototype.onClick = function(event) {
 		}
 		this.activeItem = undefined;
 	}
-};
+}
 
 Three_Galaxy.prototype.onDoubleClick = function(event) {
 
 	console.log("doubleClick");
-
+	
+	var formerActiveItem = this.activeItem;
+	
+	this.onClick(event);
+	
 	//TODO: sepearate doubleClick from click.
 	//Check what is currently active
 	//if it is a planet, and clicked at nothing, then switch to system view
 	//if is is a star, and clicked at nothing, then switch to galactic view
 
 	if (this.activeItem === undefined) {
-
-		this.camera.position = this.cameraOrigin.clone();
-		this.cameraAttention = this.scene.position;
-		this.cameraAttentionPosition = undefined;
-		return;
+		
+		//double click at nothing, switch to active star, if there was one
+		if(formerActiveItem != undefined && formerActiveItem.getObjectType() == OBJECT_TYPE.PLANET){
+			this.activeItem = formerActiveItem.getStar();
+			this.activeItem.activate();
+			this.updateCameraAttentionOn(this.activeItem, true);
+		}
+		else{
+			this.camera.position = this.cameraOrigin.clone();
+			this.cameraAttention = this.scene.position;
+			this.cameraAttentionPosition = undefined;
+		}
 	} else {
 		this.updateCameraAttentionOn(this.activeItem, true);
 	}

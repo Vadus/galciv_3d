@@ -18,6 +18,7 @@
 		<script src="js/three_galaxy.js"></script>
 
 		<!-- ---------------- Custom Shader Code ------------------------ -->
+		<!--
 		<script id="vertexShader_glow" type="x-shader/x-vertex">
 		uniform vec3 viewVector;
 		uniform float c;
@@ -32,8 +33,9 @@
 		    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 		}
 		</script>
-		
+		-->
 		<!-- fragment shader a.k.a. pixel shader -->
+		<!--
 		<script id="fragmentShader_glow" type="x-shader/x-vertex"> 
 		uniform vec3 glowColor;
 		varying float intensity;
@@ -43,7 +45,7 @@
 		    gl_FragColor = vec4( glow, 1.0 );
 		}
 		</script>
-		
+		-->
 		<script>
 		
 			var projector = new THREE.Projector();

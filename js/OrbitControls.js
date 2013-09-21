@@ -83,6 +83,10 @@ THREE.OrbitControls = function(galaxy) {
 	var changeEvent = {
 		type : 'change'
 	};
+	
+	var clickTimer;
+	var clicking = false;
+	var clickFunction = onSingleClick;
 
 	this.rotateLeft = function(angle) {
 
@@ -329,13 +333,39 @@ THREE.OrbitControls = function(galaxy) {
 	
 	function onClick(event) {
 
+		/*
 		if (scope.enabled === false)
 			return;
 		if (scope.userRotate === false)
 			return;
-		
+			
 		scope.galaxy.onClick(event);
+		*/
 		
+		if(clicking){
+			clickFunction = onDoubleClick;
+			return;
+		}
+		
+		clicking = true;
+		clickTimer = setTimeout(function(){
+			
+			clickFunction(event);
+			
+			clickFunction = onSingleClick;
+			clicking = false;
+		}, 200);
+		
+	}
+	
+	function onSingleClick(event){
+		
+		if (scope.enabled === false)
+			return;
+		if (scope.userRotate === false)
+			return;
+			
+		scope.galaxy.onClick(event);
 	}
 	
 	function onDoubleClick(event) {
@@ -510,7 +540,7 @@ THREE.OrbitControls = function(galaxy) {
 	this.domElement.addEventListener('mousedown', onMouseDown, false);
 	this.domElement.addEventListener('mousewheel', onMouseWheel, false);
 	this.domElement.addEventListener('click', onClick, false);
-	this.domElement.addEventListener('dblclick', onDoubleClick, false);
+	//this.domElement.addEventListener('dblclick', onDoubleClick, false);
 	this.domElement.addEventListener('DOMMouseScroll', onMouseWheel, false);
 	// firefox
 	window.addEventListener('keydown', onKeyDown, false);
