@@ -24,7 +24,7 @@ THREE.OrbitControls = function(galaxy) {
 	this.userRotateSpeed = 1.0;
 
 	this.userPan = true;
-	this.userPanSpeed = 2.0;
+	this.userPanSpeed = 100.0;
 
 	this.autoRotate = false;
 	this.autoRotateSpeed = 2.0;
@@ -150,6 +150,15 @@ THREE.OrbitControls = function(galaxy) {
 		if(this.galaxy.cameraAttention != undefined){
 			this.galaxy.cameraDistance *= scale;
 		}
+		
+		console.log("zooming in, scale = " + scale);
+		
+		if(this.activeItem === undefined){
+			for(var i in this.galaxy.stars){
+				var star = this.galaxy.stars[i];
+				//star.updatePosition( 1 / scale );
+			}
+		}
 
 	};
 
@@ -167,6 +176,15 @@ THREE.OrbitControls = function(galaxy) {
 		if(this.galaxy.cameraAttention != undefined){
 			this.galaxy.cameraDistance *= scale;
 		}
+		
+		console.log("zooming out, scale = " + scale + ", camera attention = " + this.galaxy.cameraAttention);
+		
+		if(this.activeItem === undefined){
+			for(var i in this.galaxy.stars){
+				var star = this.galaxy.stars[i];
+				//star.updatePosition( 1 / scale );
+			}
+		}
 	};
 
 	this.pan = function(distance) {
@@ -174,10 +192,24 @@ THREE.OrbitControls = function(galaxy) {
 		distance.transformDirection(this.object.matrix);
 		distance.multiplyScalar(scope.userPanSpeed);
 
+		console.log("Panning, adding to Camera position and lookAt : " + distance.x + "," + distance.y + "," + distance.z);
+
 		this.object.position.add(distance);
 		this.center.add(distance);
+		
+		//no camera attention, when panning
+		this.galaxy.updateCameraAttentionOn(undefined, false);
 
 	};
+	
+	/*
+	this.moveObject = function(toX, toY, toZ){
+		
+		this.object.positon.x += toX;
+		this.object.positon.y += toY;
+		this.object.positon.z += toZ;
+	};
+	*/
 	
 	this.getState = function(){
 		return state;
@@ -186,7 +218,7 @@ THREE.OrbitControls = function(galaxy) {
 	this.update = function(cameraAttention) {
 		
 		if(cameraAttention != undefined){
-			this.center = cameraAttention;
+			this.center = cameraAttention.clone();
 		}
 
 		var position = this.object.position;
@@ -418,10 +450,10 @@ THREE.OrbitControls = function(galaxy) {
 			var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
 			var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
+			//console.log("panning to " + -movementX +","+ movementY + ",0");
+
 			scope.pan(new THREE.Vector3(-movementX, movementY, 0));
-
 		}
-
 	}
 
 	
