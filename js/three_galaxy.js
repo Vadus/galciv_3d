@@ -3,6 +3,11 @@ var VIEW = {
 	SYSTEM : "SYSTEM",
 	PLANET : "PLANET"
 };
+
+function View(viewType) {
+	this.type = viewType;
+	this.item = undefined;
+};
 	
 var OBJECT_TYPE = {
 	STAR : "STAR",
@@ -234,7 +239,7 @@ function Three_Galaxy(container) {
 	///////////
 	this.scene = new THREE.Scene();
 	
-	this.view = VIEW.GALAXY;
+	this.view = new View(VIEW.GALAXY);
 
 	////////////
 	// CAMERA //
@@ -384,17 +389,17 @@ Three_Galaxy.prototype.setupStar = function(star) {
 	//Star Body
 	var sphereGeo = new THREE.SphereGeometry(star.size * 10, 32, 16);
 
-	var colors = THREE.ImageUtils.loadTexture("img/sun-surface.jpg");
+	//var colors = THREE.ImageUtils.loadTexture("img/sun-surface.jpg");
 	//var bumpy = THREE.ImageUtils.loadTexture("img/sun_surface.jpg");
-	var shiny = THREE.ImageUtils.loadTexture("img/sun-specular.png");
+	//var shiny = THREE.ImageUtils.loadTexture("img/sun-specular.png");
 
 	var starMaterial = new THREE.MeshPhongMaterial({
 		color : 0xffffff,
-		map : colors,
+		//map : colors,
 		//bumpMap : bumpy,
 		//bumpScale : 4,
 		specular : 0xffff00,
-		specularMap : shiny,
+		//specularMap : shiny,
 		emissive : 0xE3E771
 	});
 
@@ -670,11 +675,6 @@ Three_Galaxy.prototype.onDoubleClick = function(event) {
 
 	console.log("doubleClick");
 	
-	//TODO: introduce view states. Galatic, System and Planet View. 
-	// in Galactic View: Show only Stars of Systems and other Galactic Objects
-	// in System View  : Show only this Star and Planets and other System Objects
-	// in Planet View  : Show only this Planet. Information about Population etc. is shown
-	
 	var formerActiveItem = this.activeItem;
 	
 	this.onClick(event);
@@ -701,8 +701,14 @@ Three_Galaxy.prototype.onDoubleClick = function(event) {
 Three_Galaxy.prototype.updateCameraAttentionOn = function(galacticItem, switchView) {
 
 	if (galacticItem === undefined) {
-		this.cameraAttention = undefined;
-		this.cameraAttentionPosition = undefined;
+		
+		if(switchView){
+			this.setView(VIEW.GALAXY);
+		}
+		else{
+			this.cameraAttention = undefined;
+			this.cameraAttentionPosition = undefined;
+		}
 		return;
 	}
 	
@@ -722,21 +728,21 @@ Three_Galaxy.prototype.updateCameraAttentionOn = function(galacticItem, switchVi
 		this.camera.position = this.cameraAttentionPosition;
 	}
 	
-	if(this.view == VIEW.PLANET && galacticItem.getObjectType() == OBJECT_TYPE.PLANET){
+	if(this.view.type == VIEW.PLANET && galacticItem.getObjectType() == OBJECT_TYPE.PLANET){
 		//follow planet with camera
 		this.cameraAttentionPosition = this.camera.position;
 		this.cameraAttentionPosition.set(this.cameraAttention.x, this.cameraAttention.y - this.cameraDistance, this.cameraAttention.z + this.cameraDistance);
 		this.camera.position = this.cameraAttentionPosition;
-		console.log("planetary view, camera pos: " + this.camera.position.x + "," + this.camera.position.y + "," + this.camera.position.z);
+		//console.log("planetary view, camera pos: " + this.camera.position.x + "," + this.camera.position.y + "," + this.camera.position.z);
 	}
 	
 	this.cameraAttention = galacticItem.getMesh().position;
 	this.camera.lookAt(this.cameraAttention);
 };
 
-Three_Galaxy.prototype.setView = function(view){
+Three_Galaxy.prototype.setView = function(viewType){
 	
-	console.log("set view to " + view);
+	console.log("set view to " + viewType);
 	if(this.activeItem != undefined){
 		console.log("activeItem is " + this.activeItem.getObjectType() + " " + this.activeItem.id);
 	}
@@ -754,7 +760,7 @@ Three_Galaxy.prototype.setView = function(view){
 	
 	//this.view = view;
 	
-	if(view == VIEW.GALAXY){
+	if(viewType == VIEW.GALAXY){
 		console.log("showing galaxy with " + this.stars.length + " stars");
 		
 		if(this.cameraAttention === undefined){
@@ -776,6 +782,7 @@ Three_Galaxy.prototype.setView = function(view){
 			console.log("Setting camera attention to " + cameraAttentionItem.getObjectType() + " " + cameraAttentionItem.id
 			+ " at " + cameraAttentionItem.getMesh().position.x + "," + cameraAttentionItem.getMesh().position.y  + "," + cameraAttentionItem.getMesh().position.z);
 			this.updateCameraAttentionOn(cameraAttentionItem, false);
+			this.view.item = cameraAttentionItem;
 		}
 		
 		/*
@@ -792,14 +799,11 @@ Three_Galaxy.prototype.setView = function(view){
 		}
 		*/
 	}
-	else if (view == VIEW.SYSTEM){
+	else if (viewType == VIEW.SYSTEM){
 		//set all stars far away from each other
 		for (var i in this.stars) {
 			var star = this.stars[i];
-			if(this.view == VIEW.GALAXY){
-				//star.updatePosition(4);
-			}
-			//star.setVisible(true);
+			
 			
 			//set planets visible
 			if(this.activeItem != undefined && this.activeItem === star){
@@ -810,8 +814,8 @@ Three_Galaxy.prototype.setView = function(view){
 					var planet = star.planets[p];
 					
 					//remove old planet ellipses
-					planet.group.remove(planet.ellipse);
-					this.scene.remove(planet.ellipse);
+					//planet.group.remove(planet.ellipse);
+					//this.scene.remove(planet.ellipse);
 					//recreate planet ellipses for new star location
 					planet.ellipse = planet.createEllipse();
 					this.scene.add(planet.ellipse);
@@ -819,10 +823,12 @@ Three_Galaxy.prototype.setView = function(view){
 					
 					planet.setVisible(true);
 				}
+				
+				this.view.item = star;
 			}
 		}
 	}
-	else if (view == VIEW.PLANET){
+	else if (viewType == VIEW.PLANET){
 		
 		if(this.activeItem != undefined){
 			var star = this.activeItem.getStar();
@@ -833,18 +839,21 @@ Three_Galaxy.prototype.setView = function(view){
 				var planet = star.planets[p];
 				
 				//remove old planet ellipses
-				planet.group.remove(planet.ellipse);
-				this.scene.remove(planet.ellipse);
+				//planet.group.remove(planet.ellipse);
+				//this.scene.remove(planet.ellipse);
 				//recreate planet ellipses for new star location
-				planet.ellipse = planet.createEllipse();
-				this.scene.add(planet.ellipse);
-				planet.group.add(planet.ellipse);
+				//planet.ellipse = planet.createEllipse();
+				//this.scene.add(planet.ellipse);
+				//planet.group.add(planet.ellipse);
 				
 				planet.setVisible(true);
 			}
+			
+			this.view.item = this.activeItem;
 		}
 	}
-	this.view = view;
+	this.view.type = viewType;
+	console.log("view is now " + this.view.type + " with item " + this.view.item);
 };
 
 Three_Galaxy.prototype.render = function() {
@@ -857,8 +866,9 @@ Three_Galaxy.prototype.update = function() {
 
 	//for (var i in this.stars) {
 	//	var star = this.stars[i];
-	if(this.activeItem != undefined){
-		var star = this.activeItem.getStar();
+	if(this.view.type == VIEW.SYSTEM || this.view.type == VIEW.PLANET){
+		var star = this.view.item.getStar();
+		
 		for (var i in star.planets) {
 			var planet = star.planets[i];
 
@@ -887,16 +897,9 @@ Three_Galaxy.prototype.update = function() {
 	}
 	
 	if(this.controls.getState() == -1 
-	&& this.view == VIEW.PLANET && this.activeItem != undefined && this.activeItem.getObjectType() == OBJECT_TYPE.PLANET){
+	&& this.view.type == VIEW.PLANET && this.activeItem != undefined && this.activeItem.getObjectType() == OBJECT_TYPE.PLANET){
 		this.updateCameraAttentionOn(this.activeItem, false);
 	}
-	
-	/*
-	if (this.cameraAttentionPosition != undefined && this.controls.getState() == -1) {
-
-		this.updateCameraAttentionOn(this.activeItem, false);
-	}
-	*/
 
 	this.controls.update(this.cameraAttention);
 };
