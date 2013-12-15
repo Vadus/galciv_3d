@@ -268,7 +268,7 @@
 
 		} else if ( object instanceof THREE.Line ) {
 			
-			console.log("Raycaster at a LINE object");
+			//console.log("Raycaster at a LINE object");
 
 			var precision = raycaster.linePrecision;
 			var precisionSq = precision * precision;

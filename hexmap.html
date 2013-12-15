@@ -76,8 +76,12 @@
 				
 				scene = new THREE.Scene();
 				
-				hexmap = new Three_Hexmap(10, 10, 10);
-				hexmap.addToScene(scene);
+				hexmap = new Three_Hexmap(10, 10, 10, {
+					onClick: hexmapOnClick
+				});
+				hexmap.addToScene(scene, {
+					tileMaterial: new THREE.MeshBasicMaterial( { color: 0x22AA22, side: THREE.DoubleSide } )
+				});
 
 				var subdivisions = 4;
 				var recursion = 1;
@@ -131,43 +135,14 @@
 
 				window.addEventListener( 'resize', onWindowResize, false );
 				window.addEventListener( 'click', onClick, false );
-
-			}
+			};
 			
 			function onClick(event) {
-
-				//check if anything clickable was clicked
+				hexmap.onClick(event);
+			};
 			
-				// update the mouse variable
-				mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = -(event.clientY / window.innerHeight ) * 2 + 1;
-			
-				// find intersections
-				
-				console.log("Clicked at " + mouse.x + ", " + mouse.y);
-			
-				// create a Ray with origin at the mouse position
-				//   and direction into the scene (camera direction)
-				var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-				projector.unprojectVector(vector, camera);
-				
-				var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
-				
-				//intersect hexagons
-				var hexagonsIntersected = hexmap.intersectHexagons(ray);
-				if(hexagonsIntersected.length > 0){
-					hexagonsIntersected[0].border.material.color.setHex( Math.random() * 0xffffff );
-				}
-				
-				//intersect other objects
-				var intersects = ray.intersectObjects( objects );
-				
-				console.log("Click intersects " + intersects.length + " targets");
-				
-			    if ( intersects.length > 0 ) {
-			    	
-			    	intersects[ 0 ].object.material.color.setHex( Math.random() * 0xffffff );
-			    }
+			function hexmapOnClick(hexagon){
+				hexagon.plane.material.color.setHex( Math.random() * 0xffffff );
 			};
 			
 			function onWindowResize() {
@@ -177,7 +152,7 @@
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
-			}
+			};
 
 			function animate() {
 
@@ -188,13 +163,13 @@
 				
 				controls.update();
 
-			}
+			};
 
 			function render() {
 
 				renderer.render( scene, camera );
 
-			}
+			};
 
 	</script>
 

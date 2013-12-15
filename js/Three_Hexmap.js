@@ -22,11 +22,13 @@ function Three_Hexmap(width, height, hex_size, options) {
     
     //default
     this.h_border = 0;
-	
-    if(options != undefined){
-    	if(options.border != undefined){
+    if(options !== undefined){
+    	if(options.border !== undefined){
     		this.h_border = options.border;
-    	};
+    	}
+    	if(options.onClick !== undefined){
+    		this._hexmapOnClick = options.onClick;
+    	}
     };
     
     // map properties
@@ -34,10 +36,10 @@ function Three_Hexmap(width, height, hex_size, options) {
     this.y_range = Math.floor(this.h_y_range*this.h_b);
     
     // setup map
-    this.setup();
+    this._setup();
 };
 
-Three_Hexmap.prototype.setup = function() {
+Three_Hexmap.prototype._setup = function() {
     var mx = 0;
     var my = 0;
     var hex_bottom_right = 0;
@@ -68,7 +70,8 @@ Three_Hexmap.prototype.setup = function() {
             // calculating hexagon
             this.h_list[hx][hy].vertices = this._getHexagon(mx,my);
             
-            this.hexagons.push(this.h_list[hx][hy]);
+            var hexagon = this.h_list[hx][hy];
+            this.hexagons.push(hexagon);
             
             // switch top/bottom hexagon
             if(hex_bottom_right == 1) {
@@ -108,14 +111,14 @@ Three_Hexmap.prototype._getHexagon = function(x,y) {
 Three_Hexmap.prototype.addToScene = function(scene, options) {
 	
 	//defaults
-	var planeMaterial = new THREE.MeshBasicMaterial( { transparent: true, opacity: 0, color: 0x000000, side: THREE.DoubleSide } ); 
+	var tileMaterial = new THREE.MeshBasicMaterial( { transparent: true, opacity: 0, color: 0x000000, side: THREE.DoubleSide } ); 
 	var borderMaterial = new THREE.LineBasicMaterial();
 	
-    if(options != undefined){
-    	if(options.planeMaterial != undefined){
-    		planeMaterial = options.planeMaterial;
+    if(options !== undefined){
+    	if(options.tileMaterial !== undefined){
+    		tileMaterial = options.tileMaterial;
     	};
-    	if(options.borderMaterial != undefined){
+    	if(options.borderMaterial !== undefined){
     		borderMaterial = options.borderMaterial;
     	};
     };
@@ -127,7 +130,7 @@ Three_Hexmap.prototype.addToScene = function(scene, options) {
     	hexagon.shape = new THREE.Shape(hexagon.vertices);
 		hexagon.geometry = new THREE.ShapeGeometry( hexagon.shape );
 		
-		hexagon.plane = new THREE.Mesh(hexagon.geometry, planeMaterial.clone());
+		hexagon.plane = new THREE.Mesh(hexagon.geometry, tileMaterial.clone());
 		hexagon.plane.rotation.x = Math.PI / 2; // lay on floor
 		
 		hexagon.border = new THREE.Line( hexagon.shape.createPointsGeometry(), borderMaterial.clone() );
@@ -163,7 +166,7 @@ Three_Hexmap.prototype.addToScene = function(scene, options) {
 			hexagon.add(hexBorder);
 			
 			
-			if(group != undefined){
+			if(group !== undefined){
 				group.push( hexagon );
 			};
 			scene.add( hexagon );
@@ -173,6 +176,48 @@ Three_Hexmap.prototype.addToScene = function(scene, options) {
 		}
 	};
 	*/
+};
+
+Three_Hexmap.prototype.onClick = function(event) {
+	
+	//check if anything clickable was clicked
+			
+	// update the mouse variable
+	mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = -(event.clientY / window.innerHeight ) * 2 + 1;
+
+	// find intersections
+	
+	console.log("Clicked at " + mouse.x + ", " + mouse.y);
+
+	// create a Ray with origin at the mouse position
+	//   and direction into the scene (camera direction)
+	var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+	projector.unprojectVector(vector, camera);
+	
+	var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+	
+	//intersect hexagons
+	var hexagonsIntersected = hexmap.intersectHexagons(ray);
+	if(hexagonsIntersected.length > 0){
+		//hexagonsIntersected[0].border.material.color.setHex( Math.random() * 0xffffff );
+		this._hexmapOnClick(hexagonsIntersected[ 0 ]);
+	}
+	
+	//intersect other objects
+	var intersects = ray.intersectObjects( objects );
+	
+	console.log("Click intersects " + intersects.length + " targets");
+	
+    if ( intersects.length > 0 ) {
+    	
+    	intersects[ 0 ].object.material.color.setHex( Math.random() * 0xffffff );
+    }
+
+};
+
+Three_Hexmap.prototype._hexmapOnClick = function(hexagon){
+	console.log("Clicked at hexagon " + hexagon.x + "," + hexagon.y);
 };
 
 Three_Hexmap.prototype.intersectHexagons = function(ray) {
