@@ -82,6 +82,9 @@
 				hexmap.addToScene(scene, {
 					tileMaterial: new THREE.MeshBasicMaterial( { color: 0x22AA22, side: THREE.DoubleSide } )
 				});
+				
+				var jsonLoader = new THREE.JSONLoader();
+				jsonLoader.load( "js/models/T34/T-34.js", addModelToScene );
 
 				var subdivisions = 4;
 				var recursion = 1;
@@ -169,6 +172,14 @@
 
 				renderer.render( scene, camera );
 
+			};
+			
+			function addModelToScene( geometry, materials ) 
+			{
+				var material = new THREE.MeshFaceMaterial( materials );
+				var model = new THREE.Mesh( geometry, material );
+				model.scale.set(0.1,0.1,0.1);
+				scene.add( model );
 			};
 
 	</script>
