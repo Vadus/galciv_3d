@@ -1,0 +1,136 @@
+
+
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Template (Three.js)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<script src="http://threejs.org/build/three.min.js"></script>
+<script src="http://threejs.org/examples/js/Detector.js"></script>
+<script src="http://threejs.org/examples/js/loaders/ColladaLoader.js"></script>
+<script src="js/orig/OrbitControls.js"></script>
+
+<div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div>
+<script>
+
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var clock = new THREE.Clock();
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+
+
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+	scene.add( new THREE.AmbientLight( 0xffffff ));
+
+
+	var jsonLoader = new THREE.JSONLoader();		
+	
+	/*
+	var map1 = new THREE.ImageUtils.loadCompressedTexture('js/models/cube/cubeDDS.dds');
+	jsonLoader.load( "js/models/cube/cube2.js", addCubeDDS );
+	function addCubeDDS( geometry, materials ) {
+				var material = new THREE.MeshPhongMaterial( {map: map1} );
+				cube1 = new THREE.Mesh( geometry, material );
+				cube1.position.x = 66;
+				scene.add( cube1 );
+				}
+	*/
+	/*
+	var map2 = new THREE.ImageUtils.loadCompressedTexture('js/models/T34/T-34.dds');
+	jsonLoader.load( "js/models/T34/T-34.js", addCubeDDS2 );
+	function addCubeDDS2( geometry, materials ) {
+				var material = new THREE.MeshPhongMaterial( {map: map2} );
+				var mesh = new THREE.Mesh( geometry, material );
+				mesh.position.x = -100;
+				scene.add( mesh );
+				}
+				
+	var map3 = new THREE.ImageUtils.loadCompressedTexture('js/models/BM13_Katyusha/BM-13_Katyusha.dds');
+	jsonLoader.load( "js/models/BM13_Katyusha/BM-13_Katyusha.js", addCubeDDS3 );
+	function addCubeDDS3( geometry, materials ) {
+				var material = new THREE.MeshPhongMaterial( {map: map3} );
+				var mesh = new THREE.Mesh( geometry, material );
+				mesh.position.x = 100;
+				scene.add( mesh );
+				}
+	*/			
+	var map4 = new THREE.ImageUtils.loadCompressedTexture('js/models/KV2/KV-2.dds');
+	jsonLoader.load( "js/models/KV2/KV-2.js", addCubeDDS4 );
+	function addCubeDDS4( geometry, materials ) {
+				var material = new THREE.MeshPhongMaterial( {map: map4} );
+				var mesh = new THREE.Mesh( geometry, material );
+				mesh.position.x = -100;
+				scene.add( mesh );
+				}
+	/*			
+	var dae;//, skin;
+	var loader = new THREE.ColladaLoader();
+	loader.options.convertUpAxis = true;
+	loader.load( 'js/models/BM13_Katyusha/BM-13_Katyusha.dae', function ( collada ) {
+
+		dae = collada.scene;
+		//skin = collada.skins[ 0 ];
+
+		//dae.scale.x = dae.scale.y = dae.scale.z = 0.002;
+		//dae.updateMatrix();
+
+		scene.add( dae );
+	
+	} );
+	*/
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	camera.up = new THREE.Vector3(0,1,0);
+	controls.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>

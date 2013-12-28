@@ -35,10 +35,10 @@
 		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - dashed lines example</div>
 		<div id="container"></div>
 
+		<script src="http://threejs.org/build/three.js"></script>
 		<script src="http://threejs.org/examples/js/Detector.js"></script>
 		<script src="http://threejs.org/examples/js/libs/stats.min.js"></script>
-
-		<script src="http://threejs.org/build/three.js"></script>
+		
 		<script src="js/orig/OrbitControls.js"></script>
 		<script src="js/orig/Raycaster.js"></script>
 		<script src="js/Three_Hexmap.js"></script>
@@ -55,6 +55,8 @@
 			var hexmap;
 			var hexagons = [];
 			var objects = [];
+			
+			var modelMap;
 			
 			var mouse = {
 				x : 0,
@@ -75,6 +77,7 @@
 				camera.position.y = 100;
 				
 				scene = new THREE.Scene();
+				scene.add( new THREE.AmbientLight( 0xffffff ));
 				
 				hexmap = new Three_Hexmap(10, 10, 10, {
 					onClick: hexmapOnClick
@@ -83,8 +86,10 @@
 					tileMaterial: new THREE.MeshBasicMaterial( { color: 0x22AA22, side: THREE.DoubleSide } )
 				});
 				
+				modelMap = new THREE.ImageUtils.loadCompressedTexture('js/models/KV2/KV-2.dds');
 				var jsonLoader = new THREE.JSONLoader();
-				jsonLoader.load( "js/models/T34/T-34.js", addModelToScene );
+				jsonLoader.load( "js/models/KV2/KV-2.js", addModelToScene );
+
 
 				var subdivisions = 4;
 				var recursion = 1;
@@ -176,9 +181,13 @@
 			
 			function addModelToScene( geometry, materials ) 
 			{
-				var material = new THREE.MeshFaceMaterial( materials );
+				
+				var material = new THREE.MeshPhongMaterial( {map: modelMap} );
+				//var material = new THREE.MeshFaceMaterial( materials );
 				var model = new THREE.Mesh( geometry, material );
-				model.scale.set(0.1,0.1,0.1);
+				model.scale.set(0.07,0.07,0.07);
+				model.position.x = 10;
+				model.position.z = 10;
 				scene.add( model );
 			};
 
